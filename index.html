@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catch the Falling Objects Game with Power-Ups and Upgrades!">
+    <title>Catch the Falling Objects</title>
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            text-align: center;
+            background-color: #333;
+            color: white;
+        }
+
+        canvas {
+            background-color: #f0f0f0;
+            display: block;
+            margin: 0 auto;
+            border: 2px solid black;
+        }
+
+        .score-display {
+            font-size: 24px;
+            color: #FFD700;
+            margin: 20px 0;
+        }
+
+        .upgrade-display {
+            font-size: 18px;
+            color: #66CDAA;
+            margin: 10px 0;
+        }
+
+        .upgrade-button {
+            padding: 10px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .upgrade-button:disabled {
+            background-color: #777;
+            cursor: not-allowed;
+        }
+
+        .almanac {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 20%;
+            width: 60%;
+            height: 60%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            overflow-y: auto;
+            padding: 20px;
+            border: 2px solid #FFD700;
+        }
+
+        .almanac h2 {
+            margin-top: 0;
+        }
+
+        .almanac-item {
+            margin: 10px 0;
+        }
+
+        .almanac-item img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .almanac-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .notification {
+            position: fixed;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #FFD700;
+            color: black;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="score-display">Money: $<span id="dollars">0</span>.<span id="cents">0</span></h1>
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="upgrade-display">
+        <h2>Upgrades</h2>
+        <button class="upgrade-button" id="buy-multiplier" disabled>Cent Multiplier ($5)</button>
+        <button class="upgrade-button" id="buy-basket-range" disabled>Widen Basket Range ($3)</button>
+        <button class="upgrade-button" id="buy-speed" disabled>Increase Basket Speed ($2)</button>
+    </div>
+
+    <button class="almanac-button" onclick="toggleAlmanac()">Almanac</button>
+    <div class="almanac" id="almanac">
+        <h2>Almanac</h2>
+        <div id="almanac-content"></div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 400;
+
+        // Game variables
+        let basket = {
+            x: canvas.width / 2 - 40,
+            y: canvas.height - 30,
+            width: 80,
+            height: 20,
+            dx: 5,
+        };
+        let fallingObjects = [];
+        let cents = 0;
+        let dollars = 0;
+        let gameSpeed = 2;
+        let centMultiplier = 1;
+        let basketSpeedMultiplier = 1;
+        let luck = 1;
+        let canMove = true;
+        let discoveredObjects = {};
+
+        let multiplierCost = 5;
+        let basketRangeCost = 3;
+        let speedCost = 2;
+
+        // Toggle the almanac visibility
+        function toggleAlmanac() {
+            const almanac = document.getElementById('almanac');
+            almanac.style.display = almanac.style.display === 'none' ? 'block' : 'none';
+            updateAlmanac();
+        }
+
+        // Update the almanac content
+        function updateAlmanac() {
+            const almanacContent = document.getElementById('almanac-content');
+            almanacContent.innerHTML = '';
+
+            const objectTypes = [
+                { name: 'Normal Object', description: 'Increases money by 10 cents.', type: 'normal', image: 'Red Square.svg' },
+                { name: 'Money Trap', description: 'Reduces your money.', type: 'moneyTrap', image: 'Black Square.svg' },
+                { name: 'Can\'t Move Trap', description: 'Prevents basket movement temporarily.', type: 'cantMove', image: 'Purple Square.svg' },
+                { name: 'Cent Multiplier', description: 'Doubles your cent earnings temporarily.', type: 'centMultiplier', image: 'Gold Square.svg' },
+                { name: 'Wider Basket', description: 'Temporarily increases the basket\'s size.', type: 'widerBasket', image: 'Green Square.svg' },
+                { name: 'Many Objects', description: 'Spawns additional falling objects temporarily.', type: 'manyObjects', image: 'Orange Square.svg' },
+                { name: 'Slow Down', description: 'Temporarily slows down falling objects and speeds up the basket.', type: 'slowDown', image: 'Cyan Square.svg' }
+            ];
+
+            objectTypes.forEach(obj => {
+                const almanacItem = document.createElement('div');
+                almanacItem.classList.add('almanac-item');
+
+                if (discoveredObjects[obj.type]) {
+                    almanacItem.innerHTML = `
+                        <h3>${obj.name}</h3>
+                        <img src="${obj.image}" alt="${obj.name}">
+                        <p>${obj.description}</p>
+                    `;
+                } else {
+                    almanacItem.innerHTML = `<p>Not Discovered</p>`;
+                }
+
+                almanacContent.appendChild(almanacItem);
+            });
+        }
+
+        // Create basket
+        function drawBasket() {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+        }
+
+        // Create falling objects
+        function createFallingObject() {
+            let object = {
+                x: Math.random() * (canvas.width - 20),
+                y: 0,
+                width: 20,
+                height: 20,
+                dy: gameSpeed,
+                type: "normal"
+            };
+            const rand = Math.random();
+
+            if (rand < 0.05 * luck) object.type = "moneyTrap";
+            else if (rand < 0.1 * luck) object.type = "cantMove";
+            else if (rand < 0.2 * luck) object.type = "centMultiplier";
+            else if (rand < 0.25 * luck) object.type = "widerBasket";
+            else if (rand < 0.3 * luck) object.type = "manyObjects";
+            else if (rand < 0.35 * luck) object.type = "slowDown";
+
+            fallingObjects.push(object);
+        }
+
+        function drawFallingObjects() {
+            fallingObjects.forEach(obj => {
+                if (obj.type === "normal") ctx.fillStyle = 'red';
+                else if (obj.type === "moneyTrap") ctx.fillStyle = 'black';
+                else if (obj.type === "cantMove") ctx.fillStyle = 'purple';
+                else if (obj.type === "centMultiplier") ctx.fillStyle = 'gold';
+                else if (obj.type === "widerBasket") ctx.fillStyle = 'green';
+                else if (obj.type === "manyObjects") ctx.fillStyle = 'orange';
+                else if (obj.type === "slowDown") ctx.fillStyle = 'cyan';
+
+                ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                obj.y += obj.dy;
+            });
+        }
+
+        function moveBasket() {
+            if (canMove) {
+                if (rightPressed && basket.x + basket.width < canvas.width) {
+                    basket.x += basket.dx * basketSpeedMultiplier;
+                }
+                if (leftPressed && basket.x > 0) {
+                    basket.x -= basket.dx * basketSpeedMultiplier;
+                }
+            }
+        }
+
+        function handleUpgrades() {
+            const buyMultiplierButton = document.getElementById('buy-multiplier');
+            const buyBasketRangeButton = document.getElementById('buy-basket-range');
+            const buySpeedButton = document.getElementById('buy-speed');
+
+            // Cent multiplier upgrade
+            buyMultiplierButton.disabled = dollars < multiplierCost;
+            buyMultiplierButton.textContent = `Cent Multiplier ($${multiplierCost})`;
+
+            buyMultiplierButton.onclick = function () {
+                if (dollars >= multiplierCost) {
+                    dollars -= multiplierCost;
+                    centMultiplier += 1;
+                    multiplierCost = Math.ceil(multiplierCost * 1.5);
+                    updateMoneyDisplay();
+                }
+            };
+
+            // Basket range upgrade
+            buyBasketRangeButton.disabled = dollars < basketRangeCost;
+            buyBasketRangeButton.textContent = `Widen Basket Range ($${basketRangeCost})`;
+
+            buyBasketRangeButton.onclick = function () {
+                if (dollars >= basketRangeCost) {
+                    dollars -= basketRangeCost;
+                    basket.width += 10;
+                    basketRangeCost = Math.ceil(basketRangeCost * 1.5);
+                    updateMoneyDisplay();
+                }
+            };
+
+            // Basket speed upgrade
+            buySpeedButton.disabled = dollars < speedCost;
+            buySpeedButton.textContent = `Increase Basket Speed ($${speedCost})`;
+
+            buySpeedButton.onclick = function () {
+                if (dollars >= speedCost) {
+                    dollars -= speedCost;
+                    basketSpeedMultiplier += 0.5;
+                    speedCost = Math.ceil(speedCost * 1.5);
+                    updateMoneyDisplay();
+                }
+            };
+        }
+
+        // Display money
+        function updateMoneyDisplay() {
+            document.getElementById('dollars').textContent = dollars;
+            document.getElementById('cents').textContent = cents;
+        }
+
+        function displayNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        // Detect collision between basket and falling object
+        function detectCollision(object) {
+            return object.x < basket.x + basket.width &&
+                   object.x + object.width > basket.x &&
+                   object.y < basket.y + basket.height &&
+                   object.y + object.height > basket.y;
+        }
+
+        // Handle catching falling objects
+        function catchObject() {
+            fallingObjects = fallingObjects.filter(object => {
+                if (object.y > canvas.height) {
+                    return false; // Remove objects that have fallen off screen
+                }
+
+                if (detectCollision(object)) {
+                    if (object.type === "normal") {
+                        cents += 10 * centMultiplier;
+                    } else if (object.type === "moneyTrap") {
+                        dollars = Math.max(0, dollars - 1);
+                        cents = 0;
+                        displayNotification("You hit a Money Trap!");
+                    } else if (object.type === "cantMove") {
+                        canMove = false;
+                        displayNotification("You can't move!");
+                        setTimeout(() => {
+                            canMove = true;
+                        }, 3000);
+                    } else if (object.type === "centMultiplier") {
+                        centMultiplier *= 2;
+                        displayNotification("Cent Multiplier Activated!");
+                        setTimeout(() => {
+                            centMultiplier /= 2;
+                        }, 10000);
+                    } else if (object.type === "widerBasket") {
+                        basket.width *= 2;
+                        displayNotification("Wider Basket!");
+                        setTimeout(() => {
+                            basket.width /= 2;
+                        }, 10000);
+                    } else if (object.type === "manyObjects") {
+                        for (let i = 0; i < 5; i++) {
+                            createFallingObject();
+                        }
+                        displayNotification("Many Objects!");
+                    } else if (object.type === "slowDown") {
+                        gameSpeed /= 2;
+                        basketSpeedMultiplier *= 2;
+                        displayNotification("Slow Down!");
+                        setTimeout(() => {
+                            gameSpeed *= 2;
+                            basketSpeedMultiplier /= 2;
+                        }, 5000);
+                    }
+
+                    discoveredObjects[object.type] = true; // Mark object as discovered
+                    updateAlmanac(); // Update the almanac
+
+                    return false; // Remove the object once it's caught
+                }
+                return true; // Keep the object if not caught
+            });
+
+            // Convert cents to dollars if enough
+            if (cents >= 100) {
+                dollars += Math.floor(cents / 100);
+                cents %= 100;
+            }
+            updateMoneyDisplay();
+        }
+
+    // Variables for the ??? button
+    let mysteryClickCount = 0;
+    const mysteryMessages = [
+        "You just wasted your time.",
+        "Nothing interesting here.",
+        "Why are you still clicking?",
+        "This button does nothing.",
+        "You must be really curious.",
+        "Stop clicking, it's pointless.",
+        "Are you expecting a secret?",
+        "No secrets here, move on.",
+        "You have better things to do.",
+        "Still clicking? Okay...",
+        "Just go outside and touch the grass.",
+        "NerdJoe is angry.",
+        "Stop clicking me!.",
+        "01000100 01101001 01100100 00100000 01111001 01101111 01110101 00100000 01100101 01111000 01110000 01100101 01100011 01110100 00100000 01110100 01101000 01100001 01110100 00100000 01100001 00100000 01100011 01101111 01100100 01100101 00100000 01110111 01101111 01110101 01101100 01100100 00100000 01100010 01100101 00100000 01100101 01101110 01110100 01100101 01110010 01100101 01100100 00100000 01101000 01100101 01110010 01100101 00111111"
+    ];
+    const errorMessages = [
+        "You're so wrong.",
+        "That's not correct.",
+        "Try again, but it's still wrong.",
+        "Better luck next time.",
+        "Incorrect, obviously.",
+        "Nope, that's not it.",
+        "Such a loser.",
+        "You'll never get the correct code.",
+        "You cannot see the truth."
+    ];
+
+    // Function to handle the mystery button click
+    function handleMysteryClick() {
+        if (mysteryClickCount < 10) {
+            // Display a random mystery message
+            const randomMessage = mysteryMessages[Math.floor(Math.random() * mysteryMessages.length)];
+            alert(randomMessage);
+            mysteryClickCount++;
+        } else {
+            // After 10 clicks, ask for the code
+            const userCode = prompt("Enter code:");
+            if (userCode === "NerdJoe") {
+                const userPassword = prompt("Password?");
+                if (userPassword === "NerdLearningComputer") {
+                    // If correct code and password, reveal the +$100 button
+                    document.getElementById('addMoneyButton').style.display = 'block';
+                } else {
+                    // Incorrect password message
+                    const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                    alert(randomError);
+                }
+            } else {
+                // Incorrect code message
+                const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+                alert(randomError);
+            }
+        }
+    }
+
+    // Function to add $100 to the money
+    function addMoney() {
+        dollars += 100;
+        updateMoneyDisplay();
+    }
+
+        // Control movement using keyboard
+        let rightPressed = false;
+        let leftPressed = false;
+
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'ArrowRight') rightPressed = true;
+            if (e.code === 'ArrowLeft') leftPressed = true;
+        });
+
+        document.addEventListener('keyup', function (e) {
+            if (e.code === 'ArrowRight') rightPressed = false;
+            if (e.code === 'ArrowLeft') leftPressed = false;
+        });
+
+        // Main game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBasket();
+            moveBasket();
+            drawFallingObjects();
+            catchObject();
+            handleUpgrades();
+
+            if (Math.random() < 0.02) {
+                createFallingObject();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
+    </script>
+
+    <!-- HTML for the ??? button and the hidden +$100 button -->
+    <button class="mystery-button" onclick="handleMysteryClick()">???</button>
+    <button id="addMoneyButton" class="money-button" onclick="addMoney()" style="display: none;">+$100 Money</button>
+
+    <!-- Copyright -->
+    <footer>
+        <p>&copy; 2024 NerdJoe. All rights reserved.</p>
+    </footer>
+
+
+</body>
+</html>
