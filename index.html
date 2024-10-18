@@ -23,6 +23,13 @@
             border: 2px solid black;
         }
 
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 100px; /* Makes sure the page is scrollable */
+        }
+
         .score-display {
             font-size: 24px;
             color: #FFD700;
@@ -87,6 +94,12 @@
             cursor: pointer;
         }
 
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #888;
+        }
+
         .notification {
             position: fixed;
             top: 5%;
@@ -98,18 +111,41 @@
             border-radius: 5px;
             display: none;
         }
+        
+        .controls {
+            margin-top: 10px;
+        }
+
+        .control-button {
+            padding: 20px;
+            background-color: #444;
+            color: white;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            margin: 0 20px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
+        .control-button:active {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
-    <h1 class="score-display">Money: $<span id="dollars">0</span>.<span id="cents">0</span></h1>
-    <canvas id="gameCanvas"></canvas>
 
-    <div class="upgrade-display">
-        <h2>Upgrades</h2>
-        <button class="upgrade-button" id="buy-multiplier" disabled>Cent Multiplier ($5)</button>
-        <button class="upgrade-button" id="buy-basket-range" disabled>Widen Basket Range ($3)</button>
-        <button class="upgrade-button" id="buy-speed" disabled>Increase Basket Speed ($2)</button>
-    </div>
+    <div class="container">
+        <h1 class="score-display">Money: $<span id="dollars">0</span>.<span id="cents">0</span></h1>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="upgrade-display">
+            <h2>Upgrades</h2>
+            <button class="upgrade-button" id="buy-multiplier" disabled>Cent Multiplier ($5)</button>
+            <button class="upgrade-button" id="buy-basket-range" disabled>Widen Basket Range ($3)</button>
+            <button class="upgrade-button" id="buy-speed" disabled>Increase Basket Speed ($2)</button>
+        </div>
 
     <button class="almanac-button" onclick="toggleAlmanac()">Almanac</button>
     <div class="almanac" id="almanac">
@@ -118,6 +154,17 @@
     </div>
 
     <div class="notification" id="notification"></div>
+    
+    <!-- Add control buttons for left and right movement -->
+    <div class="controls">
+        <button class="control-button" id="left-button">Left</button>
+        <button class="control-button" id="right-button">Right</button>
+    </div>
+    
+    <!-- Copyright -->
+    <footer>
+        <p>&copy; 2024 NerdJoe. All rights reserved.</p>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -468,17 +515,56 @@
 
         // Start the game
         gameLoop();
+ 
+        // Keydown and Keyup event listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') rightPressed = true;
+            if (e.key === 'ArrowLeft') leftPressed = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowRight') rightPressed = false;
+            if (e.key === 'ArrowLeft') leftPressed = false;
+        });
+
+        // Button event listeners for movement
+        document.getElementById('right-button').addEventListener('mousedown', () => {
+            rightPressed = true;
+        });
+
+        document.getElementById('right-button').addEventListener('mouseup', () => {
+            rightPressed = false;
+        });
+
+        document.getElementById('left-button').addEventListener('mousedown', () => {
+            leftPressed = true;
+        });
+
+        document.getElementById('left-button').addEventListener('mouseup', () => {
+            leftPressed = false;
+        });
+
+        // Optional: Add touch support for mobile devices
+        document.getElementById('right-button').addEventListener('touchstart', () => {
+            rightPressed = true;
+        });
+
+        document.getElementById('right-button').addEventListener('touchend', () => {
+            rightPressed = false;
+        });
+
+        document.getElementById('left-button').addEventListener('touchstart', () => {
+            leftPressed = true;
+        });
+
+        document.getElementById('left-button').addEventListener('touchend', () => {
+            leftPressed = false;
+        });
     </script>
 
     <!-- HTML for the ??? button and the hidden +$100 button -->
     <button class="mystery-button" onclick="handleMysteryClick()">???</button>
     <button id="addMoneyButton" class="money-button" onclick="addMoney()" style="display: none;">+$100 Money</button>
-
-    <!-- Copyright -->
-    <footer>
-        <p>&copy; 2024 NerdJoe. All rights reserved.</p>
-    </footer>
-
 
 </body>
 </html>
