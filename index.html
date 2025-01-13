@@ -163,7 +163,7 @@
     
     <!-- Copyright -->
     <footer>
-        <p>&copy; 2024 NerdJoe. All rights reserved.</p>
+        <p>&copy; 2025 NerdJoe. All rights reserved.</p>
     </footer>
 
     <script>
@@ -419,70 +419,6 @@
             updateMoneyDisplay();
         }
 
-    // Variables for the ??? button
-    let mysteryClickCount = 0;
-    const mysteryMessages = [
-        "You just wasted your time.",
-        "Nothing interesting here.",
-        "Why are you still clicking?",
-        "This button does nothing.",
-        "You must be really curious.",
-        "Stop clicking, it's pointless.",
-        "Are you expecting a secret?",
-        "No secrets here, move on.",
-        "You have better things to do.",
-        "Still clicking? Okay...",
-        "Just go outside and touch the grass.",
-        "NerdJoe is angry.",
-        "Stop clicking me!.",
-        "01000100 01101001 01100100 00100000 01111001 01101111 01110101 00100000 01100101 01111000 01110000 01100101 01100011 01110100 00100000 01110100 01101000 01100001 01110100 00100000 01100001 00100000 01100011 01101111 01100100 01100101 00100000 01110111 01101111 01110101 01101100 01100100 00100000 01100010 01100101 00100000 01100101 01101110 01110100 01100101 01110010 01100101 01100100 00100000 01101000 01100101 01110010 01100101 00111111"
-    ];
-    const errorMessages = [
-        "You're so wrong.",
-        "That's not correct.",
-        "Try again, but it's still wrong.",
-        "Better luck next time.",
-        "Incorrect, obviously.",
-        "Nope, that's not it.",
-        "Such a loser.",
-        "You'll never get the correct code.",
-        "You cannot see the truth."
-    ];
-
-    // Function to handle the mystery button click
-    function handleMysteryClick() {
-        if (mysteryClickCount < 10) {
-            // Display a random mystery message
-            const randomMessage = mysteryMessages[Math.floor(Math.random() * mysteryMessages.length)];
-            alert(randomMessage);
-            mysteryClickCount++;
-        } else {
-            // After 10 clicks, ask for the code
-            const userCode = prompt("Enter code:");
-            if (userCode === "NerdJoe") {
-                const userPassword = prompt("Password?");
-                if (userPassword === "NerdLearningComputer") {
-                    // If correct code and password, reveal the +$100 button
-                    document.getElementById('addMoneyButton').style.display = 'block';
-                } else {
-                    // Incorrect password message
-                    const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-                    alert(randomError);
-                }
-            } else {
-                // Incorrect code message
-                const randomError = errorMessages[Math.floor(Math.random() * errorMessages.length)];
-                alert(randomError);
-            }
-        }
-    }
-
-    // Function to add $100 to the money
-    function addMoney() {
-        dollars += 100;
-        updateMoneyDisplay();
-    }
-
         // Control movement using keyboard
         let rightPressed = false;
         let leftPressed = false;
@@ -561,10 +497,6 @@
             leftPressed = false;
         });
     </script>
-
-    <!-- HTML for the ??? button and the hidden +$100 button -->
-    <button class="mystery-button" onclick="handleMysteryClick()">???</button>
-    <button id="addMoneyButton" class="money-button" onclick="addMoney()" style="display: none;">+$100 Money</button>
 
 </body>
 </html>
