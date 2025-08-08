@@ -3,167 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Catch the Falling Objects Game with Power-Ups and Upgrades!">
-    <title>Catch the Falling Objects</title>
+    <meta name="description" content="Catch the Falling Objects Game with Power-Ups, Upgrades, and Super Silly Features!">
+    <title>Super Silly Object Catcher</title>
     
     <style>
         body {
             margin: 0;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
             overflow: hidden;
             text-align: center;
-            background-color: #333;
-            color: white;
+            background-color: #4b0082;
+            color: #ff69b4;
+            background-image: linear-gradient(45deg, #4b0082 25%, #5d0e9c 25%, #5d0e9c 50%, #4b0082 50%, #4b0082 75%, #5d0e9c 75%, #5d0e9c);
+            background-size: 40px 40px;
+            animation: backgroundMove 30s linear infinite;
+        }
+
+        @keyframes backgroundMove {
+            0% {background-position: 0 0;}
+            100% {background-position: 40px 40px;}
         }
 
         canvas {
-            background-color: #f0f0f0;
+            background-color: #000035;
             display: block;
             margin: 0 auto;
-            border: 2px solid black;
+            border: 6px dashed #ff00ff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px #00ffff;
         }
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            padding-bottom: 100px; /* Makes sure the page is scrollable */
+            padding-bottom: 100px;
         }
 
         .score-display {
-            font-size: 24px;
-            color: #FFD700;
+            font-size: 32px;
+            color: #ffff00;
             margin: 20px 0;
+            text-shadow: 2px 2px 4px #ff00ff;
+            animation: rainbow 3s infinite;
+        }
+
+        @keyframes rainbow {
+            0% {color: #ff0000;}
+            14% {color: #ff7f00;}
+            28% {color: #ffff00;}
+            42% {color: #00ff00;}
+            56% {color: #0000ff;}
+            70% {color: #4b0082;}
+            84% {color: #9400d3;}
+            100% {color: #ff0000;}
         }
 
         .upgrade-display {
-            font-size: 18px;
-            color: #66CDAA;
+            font-size: 20px;
+            color: #00ffff;
             margin: 10px 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 15px;
         }
 
         .upgrade-button {
-            padding: 10px;
-            background-color: #444;
+            padding: 10px 15px;
+            background-color: #ff69b4;
             color: white;
             border: none;
+            border-radius: 10px;
             cursor: pointer;
-            margin: 5px;
+            margin: 8px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c1518d;
+        }
+        
+        .upgrade-button:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 9px 0 #c1518d;
+        }
+        
+        .upgrade-button:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #c1518d;
         }
         
         .upgrade-button:disabled {
             background-color: #777;
             cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .special-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .special-button {
+            background-color: #ffa500;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 0 #d18700;
+        }
+
+        .special-button:hover:not(:disabled) {
+            background-color: #ffb732;
+            transform: translateY(-5px);
+            box-shadow: 0 9px 0 #d18700;
         }
 
         .almanac {
             display: none;
             position: fixed;
-            top: 20%;
-            left: 20%;
-            width: 60%;
-            height: 60%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background-color: rgba(75, 0, 130, 0.95);
+            color: #00ffff;
             overflow-y: auto;
             padding: 20px;
-            border: 2px solid #FFD700;
+            border: 5px solid #ff00ff;
+            border-radius: 20px;
+            z-index: 100;
         }
 
         .almanac h2 {
+            color: #ffff00;
+            text-align: center;
+            font-size: 30px;
             margin-top: 0;
+            text-shadow: 2px 2px 4px #ff00ff;
+        }
+
+        .almanac-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
         }
 
         .almanac-item {
-            margin: 10px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff69b4;
+            transition: transform 0.3s;
         }
 
-        .almanac-item img {
-            width: 50px;
-            height: 50px;
+        .almanac-item:hover {
+            transform: scale(1.05);
+        }
+
+        .almanac-item h3 {
+            color: #ffff00;
+            margin-top: 0;
         }
 
         .almanac-button {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px;
-            background-color: #444;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background-color: #ff69b4;
             color: white;
             border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 18px;
+            z-index: 101;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c1518d;
+        }
+
+        .almanac-button:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 0 #c1518d;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
             cursor: pointer;
         }
 
         footer {
             text-align: center;
             margin-top: 50px;
-            color: #888;
+            color: #ff69b4;
+            font-size: 14px;
         }
 
         .notification {
             position: fixed;
-            top: 5%;
+            top: 20%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #FFD700;
-            color: black;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: #ffff00;
+            color: #000;
+            padding: 20px;
+            border-radius: 15px;
             display: none;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 15px #ff00ff;
+            z-index: 200;
+            animation: bounce 0.5s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
         }
         
         .controls {
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         .control-button {
-            padding: 20px;
-            background-color: #444;
+            padding: 25px;
+            background-color: #00bfff;
             color: white;
-            font-size: 18px;
+            font-size: 24px;
             border: none;
             cursor: pointer;
             margin: 0 20px;
             display: inline-block;
-            border-radius: 5px;
+            border-radius: 50%;
+            box-shadow: 0 6px 0 #008cb8;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .control-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 #008cb8;
         }
 
         .control-button:active {
-            background-color: #555;
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #008cb8;
+        }
+        
+        .achievement {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            display: none;
+        }
+        
+        .achievement-box {
+            display: inline-block;
+            background-color: #ffff00;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 0 20px #ff00ff;
+        }
+        
+        .stats-panel {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00ffff;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid #ff69b4;
+        }
+        
+        .stats-title {
+            color: #ffff00;
+            margin: 0 0 10px 0;
+        }
+        
+        .stats-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: left;
+            padding: 0 20px;
+        }
+        
+        .stats-list div {
+            padding: 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #00ff00;
+            width: 0%;
+            transition: width 0.5s;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 class="score-display">Money: $<span id="dollars">0</span>.<span id="cents">0</span></h1>
+        <h1 class="score-display">Super Silly Money: $<span id="dollars">0</span>.<span id="cents">00</span></h1>
 
         <canvas id="gameCanvas"></canvas>
 
-        <div class="upgrade-display">
-            <h2>Upgrades</h2>
-            <button class="upgrade-button" id="buy-multiplier" disabled>Cent Multiplier ($5)</button>
-            <button class="upgrade-button" id="buy-basket-range" disabled>Widen Basket Range ($3)</button>
-            <button class="upgrade-button" id="buy-speed" disabled>Increase Basket Speed ($2)</button>
+        <div class="stats-panel">
+            <h3 class="stats-title">Silly Stats</h3>
+            <div class="stats-list">
+                <div>Objects Caught: <span id="objects-caught">0</span></div>
+                <div>Rare Finds: <span id="rare-finds">0</span></div>
+                <div>Traps Survived: <span id="traps-survived">0</span></div>
+            </div>
+            <h4>Level Progress</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div>Level: <span id="player-level">1</span></div>
         </div>
 
-    <button class="almanac-button" onclick="toggleAlmanac()">Almanac</button>
-    <div class="almanac" id="almanac">
-        <h2>Almanac</h2>
-        <div id="almanac-content"></div>
-    </div>
+        <div class="upgrade-display">
+            <h2>Super Silly Upgrades</h2>
+            <button class="upgrade-button" id="buy-multiplier">Cent Multiplier ($5)</button>
+            <button class="upgrade-button" id="buy-basket-range">Widen Basket Range ($3)</button>
+            <button class="upgrade-button" id="buy-speed">Increase Basket Speed ($2)</button>
+            <button class="upgrade-button" id="buy-luck">Increase Silly Luck ($10)</button>
+            <button class="upgrade-button" id="buy-magnet">Object Magnet ($15)</button>
+            
+            <h2>Wacky Special Items</h2>
+            <div class="special-items">
+                <button class="upgrade-button special-button" id="buy-hat">Silly Hat ($25)</button>
+                <button class="upgrade-button special-button" id="buy-pet">Bouncy Pet ($50)</button>
+                <button class="upgrade-button special-button" id="buy-confetti">Confetti Explosion ($30)</button>
+                <button class="upgrade-button special-button" id="buy-rainbow">Rainbow Trail ($40)</button>
+            </div>
+        </div>
 
-    <div class="notification" id="notification"></div>
-    
-    <!-- Add control buttons for left and right movement -->
-    <div class="controls">
-        <button class="control-button" id="left-button">Left</button>
-        <button class="control-button" id="right-button">Right</button>
+        <button class="almanac-button" onclick="toggleAlmanac()">Super Almanac</button>
+        <div class="almanac" id="almanac">
+            <h2>Super Silly Object Almanac</h2>
+            <button class="close-button" onclick="toggleAlmanac()">X</button>
+            <div id="almanac-grid" class="almanac-grid"></div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+        
+        <div class="controls">
+            <button class="control-button" id="left-button">←</button>
+            <button class="control-button" id="right-button">→</button>
+        </div>
+        
+        <div class="achievement" id="achievement">
+            <div class="achievement-box">
+                <span id="achievement-text">Achievement Unlocked!</span>
+            </div>
+        </div>
     </div>
     
-    <!-- Copyright -->
     <footer>
-        <p>&copy; 2025 NerdJoe. All rights reserved.</p>
+        <p>&copy; 2025 NerdJoe. All rights reserved. Now with 300% more silliness!</p>
     </footer>
 
     <script>
@@ -179,7 +397,10 @@
             width: 80,
             height: 20,
             dx: 5,
+            rainbowTrail: false,
+            trailPoints: []
         };
+        
         let fallingObjects = [];
         let cents = 0;
         let dollars = 0;
@@ -187,12 +408,82 @@
         let centMultiplier = 1;
         let basketSpeedMultiplier = 1;
         let luck = 1;
+        let magnetStrength = 0;
         let canMove = true;
         let discoveredObjects = {};
+        let objectsCaught = 0;
+        let rareFinds = 0;
+        let trapsSurvived = 0;
+        let playerLevel = 1;
+        let xpToNextLevel = 100;
+        let currentXp = 0;
+        let confettiMode = false;
+        let confettiParticles = [];
+        let pet = null;
+        let achievements = {
+            firstDollar: false,
+            tenDollars: false,
+            findAllObjects: false,
+            catchFifty: false,
+            reachLevelFive: false
+        };
 
+        // Special item flags
+        let hasHat = false;
+        let hasPet = false;
+        let hasConfetti = false;
+        let hasRainbowTrail = false;
+
+        // Upgrade costs
         let multiplierCost = 5;
         let basketRangeCost = 3;
         let speedCost = 2;
+        let luckCost = 10;
+        let magnetCost = 15;
+        
+        // Special item costs
+        let hatCost = 25;
+        let petCost = 50;
+        let confettiCost = 30;
+        let rainbowCost = 40;
+
+        // Input handling
+        let leftPressed = false;
+        let rightPressed = false;
+
+        // Temporary effects
+        let tempEffects = {
+            centMultiplierTime: 0,
+            widerBasketTime: 0,
+            slowDownTime: 0,
+            cantMoveTime: 0
+        };
+
+        // Create sound effects simulation
+        function playSound(sound) {
+            console.log(`Playing sound: ${sound}`);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Show achievement
+        function showAchievement(message) {
+            const achievement = document.getElementById('achievement');
+            const achievementText = document.getElementById('achievement-text');
+            achievementText.textContent = message;
+            achievement.style.display = 'block';
+            setTimeout(() => {
+                achievement.style.display = 'none';
+            }, 4000);
+        }
 
         // Toggle the almanac visibility
         function toggleAlmanac() {
@@ -203,17 +494,20 @@
 
         // Update the almanac content
         function updateAlmanac() {
-            const almanacContent = document.getElementById('almanac-content');
-            almanacContent.innerHTML = '';
+            const almanacGrid = document.getElementById('almanac-grid');
+            almanacGrid.innerHTML = '';
 
             const objectTypes = [
-                { name: 'Normal Object', description: 'Increases money by 10 cents.', type: 'normal', image: 'Red Square.svg' },
-                { name: 'Money Trap', description: 'Reduces your money.', type: 'moneyTrap', image: 'Black Square.svg' },
-                { name: 'Can\'t Move Trap', description: 'Prevents basket movement temporarily.', type: 'cantMove', image: 'Purple Square.svg' },
-                { name: 'Cent Multiplier', description: 'Doubles your cent earnings temporarily.', type: 'centMultiplier', image: 'Gold Square.svg' },
-                { name: 'Wider Basket', description: 'Temporarily increases the basket\'s size.', type: 'widerBasket', image: 'Green Square.svg' },
-                { name: 'Many Objects', description: 'Spawns additional falling objects temporarily.', type: 'manyObjects', image: 'Orange Square.svg' },
-                { name: 'Slow Down', description: 'Temporarily slows down falling objects and speeds up the basket.', type: 'slowDown', image: 'Cyan Square.svg' }
+                { name: 'Normal Coin', description: 'A silly coin worth 10 cents. Goes "plink" when caught!', type: 'normal', color: '#ff0000', rarity: 'Common' },
+                { name: 'Money Trap', description: 'Oh no! A sneaky money-stealing trap that makes you drop dollars!', type: 'moneyTrap', color: '#000000', rarity: 'Uncommon' },
+                { name: "Can't Move Trap", description: 'Freezes your basket in place temporarily. Very inconvenient!', type: 'cantMove', color: '#800080', rarity: 'Uncommon' },
+                { name: 'Cent Multiplier', description: 'Doubles your cent earnings temporarily. Ka-ching!', type: 'centMultiplier', color: '#ffd700', rarity: 'Rare' },
+                { name: 'Wider Basket', description: 'Temporarily makes your basket super wide! Catch everything!', type: 'widerBasket', color: '#008000', rarity: 'Rare' },
+                { name: 'Many Objects', description: 'Causes a silly rain of objects to fall from the sky!', type: 'manyObjects', color: '#ffa500', rarity: 'Rare' },
+                { name: 'Slow Down', description: 'Everything moves in slow motion, except your basket which zooms around!', type: 'slowDown', color: '#00ffff', rarity: 'Rare' },
+                { name: 'Mystery Box', description: 'Contains a random surprise! Could be amazing or terrible!', type: 'mystery', color: '#ff00ff', rarity: 'Very Rare' },
+                { name: 'Golden Jackpot', description: 'Worth a whole dollar! The rarest find of all!', type: 'jackpot', color: '#ffff00', rarity: 'Extremely Rare' },
+                { name: 'Rubber Duck', description: 'Quack! Makes a silly sound and gives you bonus luck!', type: 'duck', color: '#ffff00', rarity: 'Very Rare' }
             ];
 
             objectTypes.forEach(obj => {
@@ -223,21 +517,138 @@
                 if (discoveredObjects[obj.type]) {
                     almanacItem.innerHTML = `
                         <h3>${obj.name}</h3>
-                        <img src="${obj.image}" alt="${obj.name}">
+                        <div style="width: 60px; height: 60px; background-color: ${obj.color}; margin: 0 auto; border-radius: 8px; border: 2px solid #fff;"></div>
+                        <p><strong>Rarity:</strong> ${obj.rarity}</p>
                         <p>${obj.description}</p>
                     `;
                 } else {
-                    almanacItem.innerHTML = `<p>Not Discovered</p>`;
+                    almanacItem.innerHTML = `
+                        <h3>??? Mystery Object ???</h3>
+                        <div style="width: 60px; height: 60px; background-color: #444; margin: 0 auto; border-radius: 8px; border: 2px solid #666;"></div>
+                        <p>You haven't discovered this object yet!</p>
+                        <p>Keep playing to find all the silly objects!</p>
+                    `;
                 }
 
-                almanacContent.appendChild(almanacItem);
+                almanacGrid.appendChild(almanacItem);
             });
         }
 
         // Create basket
         function drawBasket() {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+            // Rainbow trail if enabled
+            if (hasRainbowTrail) {
+                basket.trailPoints.push({x: basket.x + basket.width/2, y: basket.y + basket.height/2});
+                
+                if (basket.trailPoints.length > 20) {
+                    basket.trailPoints.shift();
+                }
+                
+                for (let i = 0; i < basket.trailPoints.length; i++) {
+                    const point = basket.trailPoints[i];
+                    const size = 5 + (i / 2);
+                    const hue = (Date.now() / 10 + i * 15) % 360;
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Adjust basket width for temporary effect
+            let currentWidth = basket.width;
+            if (tempEffects.widerBasketTime > 0) {
+                currentWidth = basket.width * 2;
+            }
+            
+            // Draw the basket
+            ctx.fillStyle = '#00bfff';
+            ctx.fillRect(basket.x - (currentWidth - basket.width) / 2, basket.y, currentWidth, basket.height);
+            
+            // Add basket details
+            ctx.fillStyle = '#0088cc';
+            ctx.fillRect(basket.x - (currentWidth - basket.width) / 2, basket.y + basket.height - 5, currentWidth, 5);
+            
+            // Draw a hat if the player has one
+            if (hasHat) {
+                const hatHeight = 20;
+                const hatWidth = 40;
+                
+                ctx.fillStyle = '#ff00ff';
+                ctx.fillRect(basket.x + (basket.width / 2) - (hatWidth / 2), 
+                             basket.y - 25, hatWidth, hatHeight);
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.beginPath();
+                ctx.moveTo(basket.x + (basket.width / 2) - (hatWidth / 2), basket.y - 25);
+                ctx.lineTo(basket.x + (basket.width / 2), basket.y - 40);
+                ctx.lineTo(basket.x + (basket.width / 2) + (hatWidth / 2), basket.y - 25);
+                ctx.fill();
+            }
+        }
+
+        // Create confetti particles
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: -20,
+                    size: Math.random() * 8 + 3,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    speedY: Math.random() * 3 + 1,
+                    speedX: (Math.random() - 0.5) * 2
+                });
+            }
+        }
+        
+        // Draw confetti
+        function drawConfetti() {
+            confettiParticles.forEach((particle, index) => {
+                ctx.fillStyle = particle.color;
+                ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                
+                particle.y += particle.speedY;
+                particle.x += particle.speedX;
+                
+                if (particle.y > canvas.height) {
+                    confettiParticles.splice(index, 1);
+                }
+            });
+            
+            if (confettiMode && confettiParticles.length < 15) {
+                createConfetti();
+            }
+        }
+
+        // Draw pet if the player has one
+        function drawPet() {
+            if (!pet) return;
+            
+            pet.targetX = basket.x + basket.width / 2;
+            pet.x += (pet.targetX - pet.x) * 0.1;
+            pet.y = basket.y - 60 + Math.sin(Date.now() / 200) * 10;
+            
+            // Draw the pet (a bouncy ball)
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(pet.x, pet.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw eyes
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(pet.x - 5, pet.y - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(pet.x + 5, pet.y - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw smile
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(pet.x, pet.y + 2, 8, 0.2, Math.PI - 0.2);
+            ctx.stroke();
         }
 
         // Create falling objects
@@ -247,38 +658,95 @@
                 y: 0,
                 width: 20,
                 height: 20,
-                dy: gameSpeed,
-                type: "normal"
+                dy: tempEffects.slowDownTime > 0 ? gameSpeed * 0.5 : gameSpeed,
+                type: "normal",
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 0.1,
+                wiggle: {
+                    amp: Math.random() * 1,
+                    freq: Math.random() * 0.1,
+                    offset: Math.random() * Math.PI * 2
+                }
             };
+            
             const rand = Math.random();
 
-            if (rand < 0.05 * luck) object.type = "moneyTrap";
-            else if (rand < 0.1 * luck) object.type = "cantMove";
-            else if (rand < 0.2 * luck) object.type = "centMultiplier";
-            else if (rand < 0.25 * luck) object.type = "widerBasket";
-            else if (rand < 0.3 * luck) object.type = "manyObjects";
-            else if (rand < 0.35 * luck) object.type = "slowDown";
+            if (rand < 0.001 * luck) object.type = "jackpot";
+            else if (rand < 0.005 * luck) object.type = "duck";
+            else if (rand < 0.02 * luck) object.type = "mystery";
+            else if (rand < 0.04 * luck) object.type = "moneyTrap";
+            else if (rand < 0.06 * luck) object.type = "cantMove";
+            else if (rand < 0.1 * luck) object.type = "centMultiplier";
+            else if (rand < 0.15 * luck) object.type = "widerBasket";
+            else if (rand < 0.2 * luck) object.type = "manyObjects";
+            else if (rand < 0.25 * luck) object.type = "slowDown";
 
             fallingObjects.push(object);
         }
 
+        // Draw the falling objects
         function drawFallingObjects() {
             fallingObjects.forEach(obj => {
-                if (obj.type === "normal") ctx.fillStyle = 'red';
-                else if (obj.type === "moneyTrap") ctx.fillStyle = 'black';
-                else if (obj.type === "cantMove") ctx.fillStyle = 'purple';
-                else if (obj.type === "centMultiplier") ctx.fillStyle = 'gold';
-                else if (obj.type === "widerBasket") ctx.fillStyle = 'green';
-                else if (obj.type === "manyObjects") ctx.fillStyle = 'orange';
-                else if (obj.type === "slowDown") ctx.fillStyle = 'cyan';
-
-                ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                ctx.save();
+                
+                obj.x += Math.sin(Date.now() * obj.wiggle.freq + obj.wiggle.offset) * obj.wiggle.amp;
+                
+                if (magnetStrength > 0) {
+                    const dx = (basket.x + basket.width / 2) - (obj.x + obj.width / 2);
+                    const dy = (basket.y + basket.height / 2) - (obj.y + obj.height / 2);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 100 * magnetStrength && dist > 0) {
+                        obj.x += dx * 0.02 * magnetStrength;
+                        obj.y += dy * 0.01 * magnetStrength;
+                    }
+                }
+                
+                ctx.translate(obj.x + obj.width / 2, obj.y + obj.height / 2);
+                
+                obj.rotation += obj.rotationSpeed;
+                ctx.rotate(obj.rotation);
+                
+                // Set colors
+                const colors = {
+                    normal: '#ff0000',
+                    moneyTrap: '#000000',
+                    cantMove: '#800080',
+                    centMultiplier: '#ffd700',
+                    widerBasket: '#008000',
+                    manyObjects: '#ffa500',
+                    slowDown: '#00ffff',
+                    mystery: '#ff00ff',
+                    jackpot: '#ffff00',
+                    duck: '#ffff00'
+                };
+                
+                ctx.fillStyle = colors[obj.type] || '#ff0000';
+                ctx.fillRect(-obj.width / 2, -obj.height / 2, obj.width, obj.height);
+                
+                // Add decorations
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                if (obj.type === "jackpot") {
+                    ctx.fillStyle = 'black';
+                    ctx.fillText("$", 0, 4);
+                } else if (obj.type === "mystery") {
+                    ctx.fillStyle = 'white';
+                    ctx.fillText("?", 0, 4);
+                } else if (obj.type === "duck") {
+                    ctx.fillStyle = '#ffa500';
+                    ctx.fillRect(5, -2, 8, 4);
+                }
+                
+                ctx.restore();
                 obj.y += obj.dy;
             });
         }
 
+        // Move the basket
         function moveBasket() {
-            if (canMove) {
+            if (canMove && tempEffects.cantMoveTime <= 0) {
                 if (rightPressed && basket.x + basket.width < canvas.width) {
                     basket.x += basket.dx * basketSpeedMultiplier;
                 }
@@ -288,215 +756,430 @@
             }
         }
 
-        function handleUpgrades() {
-            const buyMultiplierButton = document.getElementById('buy-multiplier');
-            const buyBasketRangeButton = document.getElementById('buy-basket-range');
-            const buySpeedButton = document.getElementById('buy-speed');
-
-            // Cent multiplier upgrade
-            buyMultiplierButton.disabled = dollars < multiplierCost;
-            buyMultiplierButton.textContent = `Cent Multiplier ($${multiplierCost})`;
-
-            buyMultiplierButton.onclick = function () {
-                if (dollars >= multiplierCost) {
-                    dollars -= multiplierCost;
-                    centMultiplier += 1;
-                    multiplierCost = Math.ceil(multiplierCost * 1.5);
-                    updateMoneyDisplay();
-                }
-            };
-
-            // Basket range upgrade
-            buyBasketRangeButton.disabled = dollars < basketRangeCost;
-            buyBasketRangeButton.textContent = `Widen Basket Range ($${basketRangeCost})`;
-
-            buyBasketRangeButton.onclick = function () {
-                if (dollars >= basketRangeCost) {
-                    dollars -= basketRangeCost;
-                    basket.width += 10;
-                    basketRangeCost = Math.ceil(basketRangeCost * 1.5);
-                    updateMoneyDisplay();
-                }
-            };
-
-            // Basket speed upgrade
-            buySpeedButton.disabled = dollars < speedCost;
-            buySpeedButton.textContent = `Increase Basket Speed ($${speedCost})`;
-
-            buySpeedButton.onclick = function () {
-                if (dollars >= speedCost) {
-                    dollars -= speedCost;
-                    basketSpeedMultiplier += 0.5;
-                    speedCost = Math.ceil(speedCost * 1.5);
-                    updateMoneyDisplay();
-                }
-            };
-        }
-
-        // Display money
-        function updateMoneyDisplay() {
-            document.getElementById('dollars').textContent = dollars;
-            document.getElementById('cents').textContent = cents;
-        }
-
-        function displayNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 2000);
-        }
-
-        // Detect collision between basket and falling object
-        function detectCollision(object) {
-            return object.x < basket.x + basket.width &&
-                   object.x + object.width > basket.x &&
-                   object.y < basket.y + basket.height &&
-                   object.y + object.height > basket.y;
-        }
-
-        // Handle catching falling objects
-        function catchObject() {
-            fallingObjects = fallingObjects.filter(object => {
-                if (object.y > canvas.height) {
-                    return false; // Remove objects that have fallen off screen
-                }
-
-                if (detectCollision(object)) {
-                    if (object.type === "normal") {
-                        cents += 10 * centMultiplier;
-                    } else if (object.type === "moneyTrap") {
-                        dollars = Math.max(0, dollars - 1);
-                        cents = 0;
-                        displayNotification("You hit a Money Trap!");
-                    } else if (object.type === "cantMove") {
-                        canMove = false;
-                        displayNotification("You can't move!");
-                        setTimeout(() => {
-                            canMove = true;
-                        }, 3000);
-                    } else if (object.type === "centMultiplier") {
-                        centMultiplier *= 2;
-                        displayNotification("Cent Multiplier Activated!");
-                        setTimeout(() => {
-                            centMultiplier /= 2;
-                        }, 10000);
-                    } else if (object.type === "widerBasket") {
-                        basket.width *= 2;
-                        displayNotification("Wider Basket!");
-                        setTimeout(() => {
-                            basket.width /= 2;
-                        }, 10000);
-                    } else if (object.type === "manyObjects") {
-                        for (let i = 0; i < 5; i++) {
-                            createFallingObject();
-                        }
-                        displayNotification("Many Objects!");
-                    } else if (object.type === "slowDown") {
-                        gameSpeed /= 2;
-                        basketSpeedMultiplier *= 2;
-                        displayNotification("Slow Down!");
-                        setTimeout(() => {
-                            gameSpeed *= 2;
-                            basketSpeedMultiplier /= 2;
-                        }, 5000);
-                    }
-
-                    discoveredObjects[object.type] = true; // Mark object as discovered
-                    updateAlmanac(); // Update the almanac
-
-                    return false; // Remove the object once it's caught
-                }
-                return true; // Keep the object if not caught
-            });
-
-            // Convert cents to dollars if enough
-            if (cents >= 100) {
-                dollars += Math.floor(cents / 100);
-                cents %= 100;
+        // Check collision between basket and object
+        function checkCollision(obj) {
+            let currentWidth = basket.width;
+            let currentX = basket.x;
+            
+            if (tempEffects.widerBasketTime > 0) {
+                currentWidth = basket.width * 2;
+                currentX = basket.x - (currentWidth - basket.width) / 2;
             }
-            updateMoneyDisplay();
+            
+            return obj.x < currentX + currentWidth &&
+                   obj.x + obj.width > currentX &&
+                   obj.y < basket.y + basket.height &&
+                   obj.y + obj.height > basket.y;
         }
 
-        // Control movement using keyboard
-        let rightPressed = false;
-        let leftPressed = false;
+        // Handle object catch
+        function handleCatch(obj) {
+            discoveredObjects[obj.type] = true;
+            objectsCaught++;
+            
+            const currentMultiplier = tempEffects.centMultiplierTime > 0 ? centMultiplier * 2 : centMultiplier;
+            
+            switch(obj.type) {
+                case 'normal':
+                    addMoney(0, 10 * currentMultiplier);
+                    playSound('coin');
+                    addXP(5);
+                    break;
+                case 'jackpot':
+                    addMoney(1, 0);
+                    showNotification('JACKPOT! $1.00!');
+                    playSound('jackpot');
+                    rareFinds++;
+                    addXP(50);
+                    break;
+                case 'duck':
+                    addMoney(0, 25 * currentMultiplier);
+                    luck += 0.1;
+                    showNotification('Quack! Luck increased!');
+                    playSound('duck');
+                    rareFinds++;
+                    addXP(20);
+                    break;
+                case 'centMultiplier':
+                    tempEffects.centMultiplierTime = 1000; // 10 seconds at 60fps
+                    showNotification('Cent multiplier active!');
+                    addXP(15);
+                    break;
+                case 'widerBasket':
+                    tempEffects.widerBasketTime = 800;
+                    showNotification('Super wide basket!');
+                    addXP(15);
+                    break;
+                case 'slowDown':
+                    tempEffects.slowDownTime = 600;
+                    showNotification('Slow motion mode!');
+                    addXP(15);
+                    break;
+                case 'manyObjects':
+                    // Spawn many objects
+                    for(let i = 0; i < 10; i++) {
+                        setTimeout(() => createFallingObject(), i * 100);
+                    }
+                    showNotification('Object rain!');
+                    addXP(20);
+                    break;
+                case 'moneyTrap':
+                    const lostDollars = Math.max(1, Math.floor(dollars * 0.1));
+                    dollars = Math.max(0, dollars - lostDollars);
+                    showNotification(`Lost ${lostDollars}! Trap caught you!`);
+                    playSound('trap');
+                    trapsSurvived++;
+                    break;
+                case 'cantMove':
+                    tempEffects.cantMoveTime = 300;
+                    showNotification("Can't move!");
+                    playSound('trap');
+                    trapsSurvived++;
+                    break;
+                case 'mystery':
+                    const mysteryRand = Math.random();
+                    if (mysteryRand < 0.3) {
+                        addMoney(0, 50 * currentMultiplier);
+                        showNotification('Mystery bonus: 50 cents!');
+                    } else if (mysteryRand < 0.5) {
+                        tempEffects.centMultiplierTime = 500;
+                        showNotification('Mystery bonus: Multiplier!');
+                    } else if (mysteryRand < 0.7) {
+                        tempEffects.widerBasketTime = 400;
+                        showNotification('Mystery bonus: Wide basket!');
+                    } else {
+                        const lostCents = Math.max(10, cents);
+                        cents = Math.max(0, cents - lostCents);
+                        showNotification('Mystery curse: Lost cents!');
+                    }
+                    rareFinds++;
+                    addXP(25);
+                    break;
+            }
+        }
 
-        document.addEventListener('keydown', function (e) {
-            if (e.code === 'ArrowRight') rightPressed = true;
-            if (e.code === 'ArrowLeft') leftPressed = true;
-        });
+        // Add money function
+        function addMoney(addDollars, addCents) {
+            cents += addCents;
+            dollars += addDollars;
+            
+            while (cents >= 100) {
+                cents -= 100;
+                dollars++;
+            }
+            
+            updateDisplay();
+            checkAchievements();
+        }
 
-        document.addEventListener('keyup', function (e) {
-            if (e.code === 'ArrowRight') rightPressed = false;
-            if (e.code === 'ArrowLeft') leftPressed = false;
-        });
+        // Add XP and level up
+        function addXP(amount) {
+            currentXp += amount;
+            if (currentXp >= xpToNextLevel) {
+                playerLevel++;
+                currentXp -= xpToNextLevel;
+                xpToNextLevel = Math.floor(xpToNextLevel * 1.5);
+                showNotification(`Level up! Now level ${playerLevel}!`);
+                playSound('levelup');
+                
+                // Level up bonuses
+                luck += 0.05;
+                gameSpeed += 0.1;
+            }
+            updateProgressBar();
+        }
 
-        // Main game loop
+        // Update progress bar
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progress-fill');
+            const percentage = (currentXp / xpToNextLevel) * 100;
+            progressFill.style.width = `${percentage}%`;
+        }
+
+        // Check achievements
+        function checkAchievements() {
+            if (!achievements.firstDollar && dollars >= 1) {
+                achievements.firstDollar = true;
+                showAchievement('First Dollar Earned!');
+            }
+            if (!achievements.tenDollars && dollars >= 10) {
+                achievements.tenDollars = true;
+                showAchievement('Ten Dollar Milestone!');
+            }
+            if (!achievements.catchFifty && objectsCaught >= 50) {
+                achievements.catchFifty = true;
+                showAchievement('Caught 50 Objects!');
+            }
+            if (!achievements.reachLevelFive && playerLevel >= 5) {
+                achievements.reachLevelFive = true;
+                showAchievement('Reached Level 5!');
+            }
+            if (!achievements.findAllObjects) {
+                const totalObjects = 10;
+                if (Object.keys(discoveredObjects).length >= totalObjects) {
+                    achievements.findAllObjects = true;
+                    showAchievement('Discovered All Objects!');
+                }
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            document.getElementById('dollars').textContent = dollars;
+            document.getElementById('cents').textContent = cents.toString().padStart(2, '0');
+            document.getElementById('objects-caught').textContent = objectsCaught;
+            document.getElementById('rare-finds').textContent = rareFinds;
+            document.getElementById('traps-survived').textContent = trapsSurvived;
+            document.getElementById('player-level').textContent = playerLevel;
+        }
+
+        // Update upgrade buttons
+        function updateUpgradeButton(buttonId, cost, itemName, hasPurchased = false) {
+            const button = document.getElementById(buttonId);
+            const totalMoney = dollars * 100 + cents;
+            
+            if (hasPurchased) {
+                button.textContent = `${itemName} (Owned!)`;
+                button.disabled = true;
+                button.style.backgroundColor = '#4CAF50';
+            } else if (totalMoney >= cost * 100) {
+                button.disabled = false;
+                button.textContent = `${itemName} (${cost})`;
+            } else {
+                button.disabled = true;
+                button.textContent = `${itemName} (${cost})`;
+            }
+        }
+
+        // Purchase upgrade
+        function purchaseUpgrade(cost, upgradeFunction) {
+            const totalMoney = dollars * 100 + cents;
+            if (totalMoney >= cost * 100) {
+                const costInCents = cost * 100;
+                let remainingCents = cents;
+                let remainingDollars = dollars;
+                
+                if (remainingCents >= costInCents) {
+                    remainingCents -= costInCents;
+                } else {
+                    const neededFromDollars = Math.ceil((costInCents - remainingCents) / 100);
+                    remainingDollars -= neededFromDollars;
+                    remainingCents = remainingCents + (neededFromDollars * 100) - costInCents;
+                }
+                
+                cents = remainingCents;
+                dollars = remainingDollars;
+                
+                upgradeFunction();
+                updateDisplay();
+                showNotification('Purchase successful!');
+                return true;
+            }
+            return false;
+        }
+
+        // Handle upgrades and special items
+        function handleUpgrades() {
+            updateUpgradeButton('buy-multiplier', multiplierCost, 'Cent Multiplier');
+            updateUpgradeButton('buy-basket-range', basketRangeCost, 'Widen Basket');
+            updateUpgradeButton('buy-speed', speedCost, 'Basket Speed');
+            updateUpgradeButton('buy-luck', luckCost, 'Silly Luck');
+            updateUpgradeButton('buy-magnet', magnetCost, 'Object Magnet');
+            
+            updateUpgradeButton('buy-hat', hatCost, 'Silly Hat', hasHat);
+            updateUpgradeButton('buy-pet', petCost, 'Bouncy Pet', hasPet);
+            updateUpgradeButton('buy-confetti', confettiCost, 'Confetti Explosion', hasConfetti);
+            updateUpgradeButton('buy-rainbow', rainbowCost, 'Rainbow Trail', hasRainbowTrail);
+        }
+
+        // Update temporary effects
+        function updateTempEffects() {
+            if (tempEffects.centMultiplierTime > 0) tempEffects.centMultiplierTime--;
+            if (tempEffects.widerBasketTime > 0) tempEffects.widerBasketTime--;
+            if (tempEffects.slowDownTime > 0) tempEffects.slowDownTime--;
+            if (tempEffects.cantMoveTime > 0) tempEffects.cantMoveTime--;
+        }
+
+        // Game loop
         function gameLoop() {
+            // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBasket();
+            
+            // Update temporary effects
+            updateTempEffects();
+            
+            // Move basket
             moveBasket();
-            drawFallingObjects();
-            catchObject();
-            handleUpgrades();
-
+            
+            // Create new falling objects
             if (Math.random() < 0.02) {
                 createFallingObject();
             }
-
+            
+            // Update and draw falling objects
+            drawFallingObjects();
+            
+            // Check for collisions
+            for (let i = fallingObjects.length - 1; i >= 0; i--) {
+                const obj = fallingObjects[i];
+                
+                if (checkCollision(obj)) {
+                    handleCatch(obj);
+                    fallingObjects.splice(i, 1);
+                } else if (obj.y > canvas.height) {
+                    fallingObjects.splice(i, 1);
+                }
+            }
+            
+            // Draw basket
+            drawBasket();
+            
+            // Draw pet
+            drawPet();
+            
+            // Draw confetti
+            if (hasConfetti) {
+                drawConfetti();
+            }
+            
+            // Update upgrades
+            handleUpgrades();
+            
             requestAnimationFrame(gameLoop);
         }
 
-        // Start the game
-        gameLoop();
- 
-        // Keydown and Keyup event listeners
+        // Event listeners for controls
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') rightPressed = true;
-            if (e.key === 'ArrowLeft') leftPressed = true;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                leftPressed = true;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                rightPressed = true;
+            }
         });
 
         document.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowRight') rightPressed = false;
-            if (e.key === 'ArrowLeft') leftPressed = false;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                leftPressed = false;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                rightPressed = false;
+            }
         });
 
-        // Button event listeners for movement
-        document.getElementById('right-button').addEventListener('mousedown', () => {
-            rightPressed = true;
-        });
-
-        document.getElementById('right-button').addEventListener('mouseup', () => {
-            rightPressed = false;
-        });
-
-        document.getElementById('left-button').addEventListener('mousedown', () => {
+        // Touch controls for mobile
+        document.getElementById('left-button').addEventListener('mousedown', () => leftPressed = true);
+        document.getElementById('left-button').addEventListener('mouseup', () => leftPressed = false);
+        document.getElementById('left-button').addEventListener('touchstart', (e) => {
+            e.preventDefault();
             leftPressed = true;
         });
-
-        document.getElementById('left-button').addEventListener('mouseup', () => {
+        document.getElementById('left-button').addEventListener('touchend', (e) => {
+            e.preventDefault();
             leftPressed = false;
         });
 
-        // Optional: Add touch support for mobile devices
-        document.getElementById('right-button').addEventListener('touchstart', () => {
+        document.getElementById('right-button').addEventListener('mousedown', () => rightPressed = true);
+        document.getElementById('right-button').addEventListener('mouseup', () => rightPressed = false);
+        document.getElementById('right-button').addEventListener('touchstart', (e) => {
+            e.preventDefault();
             rightPressed = true;
         });
-
-        document.getElementById('right-button').addEventListener('touchend', () => {
+        document.getElementById('right-button').addEventListener('touchend', (e) => {
+            e.preventDefault();
             rightPressed = false;
         });
 
-        document.getElementById('left-button').addEventListener('touchstart', () => {
-            leftPressed = true;
+        // Upgrade button event listeners
+        document.getElementById('buy-multiplier').addEventListener('click', () => {
+            if (purchaseUpgrade(multiplierCost, () => {
+                centMultiplier += 0.5;
+                multiplierCost = Math.ceil(multiplierCost * 1.8);
+            })) {
+                playSound('purchase');
+            }
         });
 
-        document.getElementById('left-button').addEventListener('touchend', () => {
-            leftPressed = false;
+        document.getElementById('buy-basket-range').addEventListener('click', () => {
+            if (purchaseUpgrade(basketRangeCost, () => {
+                basket.width += 10;
+                basketRangeCost = Math.ceil(basketRangeCost * 1.6);
+            })) {
+                playSound('purchase');
+            }
         });
+
+        document.getElementById('buy-speed').addEventListener('click', () => {
+            if (purchaseUpgrade(speedCost, () => {
+                basketSpeedMultiplier += 0.3;
+                speedCost = Math.ceil(speedCost * 1.4);
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        document.getElementById('buy-luck').addEventListener('click', () => {
+            if (purchaseUpgrade(luckCost, () => {
+                luck += 0.2;
+                luckCost = Math.ceil(luckCost * 2.0);
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        document.getElementById('buy-magnet').addEventListener('click', () => {
+            if (purchaseUpgrade(magnetCost, () => {
+                magnetStrength += 0.3;
+                magnetCost = Math.ceil(magnetCost * 1.7);
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        // Special item event listeners
+        document.getElementById('buy-hat').addEventListener('click', () => {
+            if (!hasHat && purchaseUpgrade(hatCost, () => {
+                hasHat = true;
+                showNotification('You got a silly hat!');
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        document.getElementById('buy-pet').addEventListener('click', () => {
+            if (!hasPet && purchaseUpgrade(petCost, () => {
+                hasPet = true;
+                pet = { x: basket.x, y: basket.y - 60, targetX: basket.x };
+                showNotification('You got a bouncy pet!');
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        document.getElementById('buy-confetti').addEventListener('click', () => {
+            if (!hasConfetti && purchaseUpgrade(confettiCost, () => {
+                hasConfetti = true;
+                confettiMode = true;
+                createConfetti();
+                showNotification('Confetti mode activated!');
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        document.getElementById('buy-rainbow').addEventListener('click', () => {
+            if (!hasRainbowTrail && purchaseUpgrade(rainbowCost, () => {
+                hasRainbowTrail = true;
+                showNotification('Rainbow trail activated!');
+            })) {
+                playSound('purchase');
+            }
+        });
+
+        // Initialize game
+        updateDisplay();
+        updateAlmanac();
+        gameLoop();
     </script>
-
 </body>
 </html>
